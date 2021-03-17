@@ -1,0 +1,47 @@
+
+import pymongo
+import requests
+import json
+
+## get the exchange rates
+print("Get Exchange Rates")
+url="https://api.exchangeratesapi.io/latest"
+p={'base':'USD'}
+r=requests.get(url, params=p)
+date_json=json.loads(r.text)['date']
+print ("date_json",date_json)
+base=json.loads(r.text)['base']
+print("base:", base)
+
+rates_json=json.loads(r.text)['rates']
+##result in json format, keeping only the exchange rate
+print (rates_json)
+
+
+## connect to MongoDB
+print("cnx :")
+
+from pymongo import MongoClient
+cluster = MongoClient("mongodb+srv://franck:Confort25p!@franckyscluster.teecd.azure.mongodb.net/test?retryWrites=true&w=majority")
+db = cluster["test"]
+
+collection = db["test_rates"]
+collection.drop()
+
+for unit_rate in rates_json:
+    print(unit_rate, "insert", "value", rates_json[unit_rate])
+    post = {"unit":unit_rate, "value":rates_json[unit_rate]}
+    collection.insert_one(post)
+
+
+#for i in range (1001,1002):
+#    print ("insert de", i)
+#    post = {"_id": i, "name": "Tim"+str(i), "score": 5}
+#    collection.insert_one(post)
+
+print('End')
+
+
+
+
+#mongodb+srv://franck:<password>@franckyscluster.teecd.azure.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
